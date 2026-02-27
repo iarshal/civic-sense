@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import './Verify.css';
 
-const API_URL = 'http://localhost:3001/api';
+const categoryNames = {
+    cleanliness: 'Public Cleanliness',
+    traffic: 'Traffic Behaviour',
+    publicSpaces: 'Respecting Public Spaces',
+    socialEtiquette: 'Social Etiquette',
+    digitalCivics: 'Digital Civic Behaviour',
+    moralValues: 'Everyday Moral Values',
+};
 
 function Verify() {
     const [certId, setCertId] = useState('');
@@ -9,7 +16,7 @@ function Verify() {
     const [result, setResult] = useState(null);
     const [error, setError] = useState('');
 
-    const handleVerify = async (e) => {
+    const handleVerify = (e) => {
         e.preventDefault();
         if (!certId.trim()) return;
 
@@ -17,18 +24,22 @@ function Verify() {
         setError('');
         setResult(null);
 
-        try {
-            const res = await fetch(`${API_URL}/certificate/${encodeURIComponent(certId.trim())}`);
-            if (res.ok) {
-                const data = await res.json();
-                setResult(data.certificate);
-            } else if (res.status === 404) {
-                setError('No certificate found with this ID. Please check and try again.');
-            } else {
-                setError('An error occurred. Please try again.');
-            }
-        } catch (err) {
-            setError('Failed to verify. Make sure the server is running.');
+        // Look up certificate from localStorage
+        const certs = JSON.parse(localStorage.getItem('civicsense_certs') || '[]');
+        const cert = certs.find(c => c.certificateId === certId.trim());
+
+        if (cert) {
+            setResult({
+                name: cert.name,
+                score: cert.score,
+                total: cert.total,
+                percentage: cert.percentage,
+                category: categoryNames[cert.category] || cert.category,
+                date: cert.date,
+                certificateId: cert.certificateId,
+            });
+        } else {
+            setError('No certificate found with this ID. Please check and try again.');
         }
         setLoading(false);
     };

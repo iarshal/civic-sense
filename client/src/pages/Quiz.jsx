@@ -1,8 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import allQuestions from '../data/questions';
 import './Quiz.css';
 
-const API_URL = 'http://localhost:3001/api';
+const categoryNames = {
+    cleanliness: 'Public Cleanliness',
+    traffic: 'Traffic Behaviour',
+    publicSpaces: 'Respecting Public Spaces',
+    socialEtiquette: 'Social Etiquette',
+    digitalCivics: 'Digital Civic Behaviour',
+    moralValues: 'Everyday Moral Values',
+};
 
 const categories = [
     { id: 'cleanliness', icon: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="22" height="22"><path d="M12 2L12 6" /><path d="M9 6h6l1 6H8l1-6z" /><path d="M8 12c-1 4-2 8-2 9a1 1 0 001 1h10a1 1 0 001-1c0-1-1-5-2-9" /><path d="M6 16h12" /></svg>), name: 'Public Cleanliness', color: '#27AE60' },
@@ -27,21 +35,24 @@ function Quiz() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const fetchQuestions = useCallback(async (cat) => {
+    const fetchQuestions = useCallback((cat) => {
         setLoading(true);
         setError('');
-        try {
-            const res = await fetch(`${API_URL}/questions?category=${cat}`);
-            const data = await res.json();
-            if (data.questions && data.questions.length > 0) {
-                setQuestions(data.questions);
-                setStep('quiz');
-            } else {
-                setError('No questions available for this category.');
-            }
-        } catch (err) {
-            setError('Failed to load questions. Make sure the server is running.');
+        const categoryQuestions = allQuestions[cat];
+        if (!categoryQuestions || categoryQuestions.length === 0) {
+            setError('No questions available for this category.');
+            setLoading(false);
+            return;
         }
+        // Shuffle and select 20 questions, strip correct answers
+        const shuffled = [...categoryQuestions].sort(() => Math.random() - 0.5);
+        const selected = shuffled.slice(0, 20).map(q => ({
+            id: q.id,
+            question: q.question,
+            options: q.options,
+        }));
+        setQuestions(selected);
+        setStep('quiz');
         setLoading(false);
     }, []);
 
@@ -84,20 +95,55 @@ function Quiz() {
         }
     };
 
-    const submitQuiz = async () => {
+    const submitQuiz = () => {
         setStep('submitting');
-        try {
-            const res = await fetch(`${API_URL}/quiz/submit`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, answers, category }),
-            });
-            const data = await res.json();
-            navigate('/results', { state: data });
-        } catch (err) {
-            setError('Failed to submit quiz. Please try again.');
-            setStep('quiz');
+        // Score locally
+        const categoryQuestions = allQuestions[category];
+        let score = 0;
+        const total = Object.keys(answers).length;
+        const results = [];
+
+        for (const [questionId, selectedAns] of Object.entries(answers)) {
+            const question = categoryQuestions.find(q => q.id === questionId);
+            if (question) {
+                const isCorrect = selectedAns === question.correct;
+                if (isCorrect) score++;
+                results.push({
+                    questionId,
+                    question: question.question,
+                    selectedAnswer: selectedAns,
+                    correctAnswer: question.correct,
+                    isCorrect,
+                    explanation: question.explanation,
+                });
+            }
         }
+
+        const percentage = Math.round((score / total) * 100);
+        const passed = percentage >= 85;
+        let certificateId = null;
+
+        if (passed) {
+            certificateId = `CS-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().split('-')[0].toUpperCase()}`;
+            const date = new Date().toISOString().split('T')[0];
+            // Save certificate to localStorage
+            const certs = JSON.parse(localStorage.getItem('civicsense_certs') || '[]');
+            certs.push({ name: name.trim(), score, total, percentage, category, date, certificateId });
+            localStorage.setItem('civicsense_certs', JSON.stringify(certs));
+        }
+
+        navigate('/results', {
+            state: {
+                name: name.trim(),
+                score,
+                total,
+                percentage,
+                passed,
+                certificateId,
+                category: categoryNames[category] || category,
+                results,
+            },
+        });
     };
 
     const progress = questions.length > 0 ? ((currentQ + 1) / questions.length) * 100 : 0;
