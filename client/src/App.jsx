@@ -12,30 +12,37 @@ import './App.css';
 
 function App() {
   const [loading, setLoading] = useState(true);
+  const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2800);
-    return () => clearTimeout(timer);
+    const fadeTimer = setTimeout(() => setFadeOut(true), 2800);
+    const removeTimer = setTimeout(() => setLoading(false), 3300);
+    return () => { clearTimeout(fadeTimer); clearTimeout(removeTimer); };
   }, []);
 
-  if (loading) return <LoadingScreen />;
-
   return (
-    <Router>
-      <div className="app">
-        <Navbar />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/learn" element={<Learn />} />
-            <Route path="/quiz" element={<Quiz />} />
-            <Route path="/results" element={<Results />} />
-            <Route path="/verify" element={<Verify />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+    <>
+      {loading && (
+        <div style={{ opacity: fadeOut ? 0 : 1, transition: 'opacity 0.5s ease', position: 'fixed', inset: 0, zIndex: 9999 }}>
+          <LoadingScreen />
+        </div>
+      )}
+      <Router>
+        <div className="app">
+          <Navbar />
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/learn" element={<Learn />} />
+              <Route path="/quiz" element={<Quiz />} />
+              <Route path="/results" element={<Results />} />
+              <Route path="/verify" element={<Verify />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </Router>
+    </>
   );
 }
 

@@ -199,7 +199,7 @@ const modules = [
 ];
 
 function Learn() {
-    const [expandedModule, setExpandedModule] = useState(null);
+    const [expandedModules, setExpandedModules] = useState(new Set());
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -218,7 +218,15 @@ function Learn() {
     }, []);
 
     const toggleModule = (id) => {
-        setExpandedModule(expandedModule === id ? null : id);
+        setExpandedModules(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
     };
 
     return (
@@ -243,7 +251,7 @@ function Learn() {
                         {modules.map((mod, index) => (
                             <div
                                 key={mod.id}
-                                className={`module-card learn-reveal stagger-${index + 1} ${expandedModule === mod.id ? 'expanded' : ''}`}
+                                className={`module-card ${expandedModules.has(mod.id) ? 'expanded' : ''}`}
                                 style={{ '--module-color': mod.color }}
                             >
                                 <div className="module-header" onClick={() => toggleModule(mod.id)}>
@@ -254,14 +262,14 @@ function Learn() {
                                         <h3>{mod.title}</h3>
                                         <p className="module-tagline">{mod.tagline}</p>
                                     </div>
-                                    <div className={`module-toggle ${expandedModule === mod.id ? 'open' : ''}`}>
+                                    <div className={`module-toggle ${expandedModules.has(mod.id) ? 'open' : ''}`}>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="18" height="18">
                                             <path d="M6 9l6 6 6-6" />
                                         </svg>
                                     </div>
                                 </div>
 
-                                <div className={`module-content ${expandedModule === mod.id ? 'show' : ''}`}>
+                                <div className={`module-content ${expandedModules.has(mod.id) ? 'show' : ''}`}>
                                     <p className="module-desc">{mod.description}</p>
 
                                     {mod.notes && (

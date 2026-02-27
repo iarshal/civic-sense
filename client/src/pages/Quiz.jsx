@@ -36,12 +36,10 @@ function Quiz() {
     const [error, setError] = useState('');
 
     const fetchQuestions = useCallback((cat) => {
-        setLoading(true);
         setError('');
         const categoryQuestions = allQuestions[cat];
         if (!categoryQuestions || categoryQuestions.length === 0) {
             setError('No questions available for this category.');
-            setLoading(false);
             return;
         }
         // Shuffle and select 20 questions, strip correct answers
@@ -53,7 +51,6 @@ function Quiz() {
         }));
         setQuestions(selected);
         setStep('quiz');
-        setLoading(false);
     }, []);
 
     useEffect(() => {
@@ -192,14 +189,13 @@ function Quiz() {
                                     className={`category-card stagger-${i + 1}`}
                                     style={{ '--cat-color': cat.color }}
                                     onClick={() => handleCategorySelect(cat.id)}
-                                    disabled={loading}
+                                    disabled={false}
                                 >
                                     <span className="cat-icon">{cat.icon}</span>
                                     <span className="cat-name">{cat.name}</span>
                                 </button>
                             ))}
                         </div>
-                        {loading && <div className="quiz-loading"><div className="spinner" /> Loading questions...</div>}
                         {error && <div className="quiz-error">{error}</div>}
                     </div>
                 )}
