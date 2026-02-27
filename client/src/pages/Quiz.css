@@ -222,30 +222,15 @@
     color: var(--primary);
 }
 
-/* Feedback */
-.feedback-bar {
+/* Navigation Bar */
+.quiz-nav-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: var(--space-lg) var(--space-xl);
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-light);
-}
-
-.feedback-bar p {
-    font-weight: 600;
-    color: var(--secondary);
-}
-
-.btn-timer {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-left: 8px;
+    gap: var(--space-md);
 }
 
 /* Loading & Error */

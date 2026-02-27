@@ -29,10 +29,6 @@ function Quiz() {
     const [questions, setQuestions] = useState([]);
     const [currentQ, setCurrentQ] = useState(0);
     const [answers, setAnswers] = useState({});
-    const [selectedAnswer, setSelectedAnswer] = useState(null);
-    const [showFeedback, setShowFeedback] = useState(false);
-    const [canProceed, setCanProceed] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
     const fetchQuestions = useCallback((cat) => {
@@ -42,7 +38,6 @@ function Quiz() {
             setError('No questions available for this category.');
             return;
         }
-        // Shuffle and select 20 questions, strip correct answers
         const shuffled = [...categoryQuestions].sort(() => Math.random() - 0.5);
         const selected = shuffled.slice(0, 20).map(q => ({
             id: q.id,
@@ -52,14 +47,6 @@ function Quiz() {
         setQuestions(selected);
         setStep('quiz');
     }, []);
-
-    useEffect(() => {
-        if (step === 'quiz') {
-            setCanProceed(false);
-            const timer = setTimeout(() => setCanProceed(true), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [currentQ, step]);
 
     const handleNameSubmit = (e) => {
         e.preventDefault();
@@ -74,27 +61,23 @@ function Quiz() {
     };
 
     const handleAnswerSelect = (optionIndex) => {
-        if (showFeedback) return;
-        setSelectedAnswer(optionIndex);
-        setShowFeedback(true);
         setAnswers(prev => ({ ...prev, [questions[currentQ].id]: optionIndex }));
     };
 
-    const handleNext = () => {
-        if (!canProceed) return;
-        setSelectedAnswer(null);
-        setShowFeedback(false);
+    const handlePrev = () => {
+        if (currentQ > 0) {
+            setCurrentQ(prev => prev - 1);
+        }
+    };
 
+    const handleNext = () => {
         if (currentQ < questions.length - 1) {
             setCurrentQ(prev => prev + 1);
-        } else {
-            submitQuiz();
         }
     };
 
     const submitQuiz = () => {
         setStep('submitting');
-        // Score locally
         const categoryQuestions = allQuestions[category];
         let score = 0;
         const total = Object.keys(answers).length;
@@ -123,7 +106,6 @@ function Quiz() {
         if (passed) {
             certificateId = `CS-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().split('-')[0].toUpperCase()}`;
             const date = new Date().toISOString().split('T')[0];
-            // Save certificate to localStorage
             const certs = JSON.parse(localStorage.getItem('civicsense_certs') || '[]');
             certs.push({ name: name.trim(), score, total, percentage, category, date, certificateId });
             localStorage.setItem('civicsense_certs', JSON.stringify(certs));
@@ -144,6 +126,8 @@ function Quiz() {
     };
 
     const progress = questions.length > 0 ? ((currentQ + 1) / questions.length) * 100 : 0;
+    const answeredCount = Object.keys(answers).length;
+    const currentAnswer = questions.length > 0 ? answers[questions[currentQ]?.id] : undefined;
 
     return (
         <div className="quiz-page">
@@ -189,7 +173,6 @@ function Quiz() {
                                     className={`category-card stagger-${i + 1}`}
                                     style={{ '--cat-color': cat.color }}
                                     onClick={() => handleCategorySelect(cat.id)}
-                                    disabled={false}
                                 >
                                     <span className="cat-icon">{cat.icon}</span>
                                     <span className="cat-name">{cat.name}</span>
@@ -208,7 +191,7 @@ function Quiz() {
                                 <span className="quiz-category-badge" style={{ background: categories.find(c => c.id === category)?.color }}>
                                     {categories.find(c => c.id === category)?.icon} {categories.find(c => c.id === category)?.name}
                                 </span>
-                                <span className="quiz-counter">Question {currentQ + 1} of {questions.length}</span>
+                                <span className="quiz-counter">Question {currentQ + 1} of {questions.length} ({answeredCount} answered)</span>
                             </div>
                             <div className="quiz-progress-bar">
                                 <div className="quiz-progress-fill" style={{ width: `${progress}%` }} />
@@ -221,13 +204,12 @@ function Quiz() {
                                 {questions[currentQ].options.map((option, i) => (
                                     <button
                                         key={i}
-                                        className={`option-btn ${selectedAnswer === i ? 'selected' : ''} ${showFeedback ? 'disabled' : ''}`}
+                                        className={`option-btn ${currentAnswer === i ? 'selected' : ''}`}
                                         onClick={() => handleAnswerSelect(i)}
-                                        disabled={showFeedback}
                                     >
                                         <span className="option-letter">{String.fromCharCode(65 + i)}</span>
                                         <span className="option-text">{option}</span>
-                                        {showFeedback && selectedAnswer === i && (
+                                        {currentAnswer === i && (
                                             <span className="option-indicator">✓</span>
                                         )}
                                     </button>
@@ -235,19 +217,31 @@ function Quiz() {
                             </div>
                         </div>
 
-                        {showFeedback && (
-                            <div className="feedback-bar animate-fade-in-up">
-                                <p>Answer recorded!</p>
+                        <div className="quiz-nav-bar">
+                            <button
+                                className="btn btn-secondary"
+                                onClick={handlePrev}
+                                disabled={currentQ === 0}
+                            >
+                                ← Previous
+                            </button>
+                            {currentQ < questions.length - 1 ? (
                                 <button
                                     className="btn btn-primary"
                                     onClick={handleNext}
-                                    disabled={!canProceed}
                                 >
-                                    {currentQ < questions.length - 1 ? 'Next Question →' : 'Submit Quiz'}
-                                    {!canProceed && <span className="btn-timer" />}
+                                    Next →
                                 </button>
-                            </div>
-                        )}
+                            ) : (
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={submitQuiz}
+                                    disabled={answeredCount < questions.length}
+                                >
+                                    Submit Quiz ({answeredCount}/{questions.length})
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )}
 
