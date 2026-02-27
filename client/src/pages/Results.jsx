@@ -85,7 +85,7 @@ function Results() {
             }
             ctx.fillText(data.name, img.width * 0.545, nameY);
         };
-        img.src = '/certificate-template.png';
+        img.src = `${import.meta.env.BASE_URL}certificate-template.png`;
     };
 
     const downloadCertificate = () => {
