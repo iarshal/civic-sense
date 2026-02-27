@@ -1,0 +1,307 @@
+.results-page {
+    min-height: calc(100vh - 72px);
+    background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+    padding: var(--space-3xl) var(--space-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Confetti */
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 100;
+    overflow: hidden;
+}
+
+.confetti-piece {
+    position: absolute;
+    top: -10px;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    animation: confetti-fall linear forwards;
+    opacity: 0.9;
+}
+
+.confetti-piece:nth-child(odd) {
+    width: 6px;
+    height: 14px;
+    border-radius: 1px;
+}
+
+.confetti-piece:nth-child(3n) {
+    width: 12px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(0) rotate(0deg) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100vh) rotate(720deg) scale(0.3);
+        opacity: 0;
+    }
+}
+
+.results-container {
+    max-width: 850px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* Score Section */
+.score-section {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.score-circle {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-xl);
+    animation: scaleIn 0.6s var(--transition-spring) forwards;
+    position: relative;
+}
+
+.score-circle.passed {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(78, 205, 196, 0.1));
+    border: 4px solid var(--success);
+    box-shadow: 0 0 40px rgba(46, 204, 113, 0.2), 0 0 80px rgba(46, 204, 113, 0.1);
+}
+
+.score-circle.failed {
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(231, 76, 60, 0.1));
+    border: 4px solid var(--warning);
+    box-shadow: 0 0 40px rgba(255, 107, 53, 0.2);
+}
+
+.score-number {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--text-primary);
+}
+
+.score-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.result-message {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s ease;
+}
+
+.result-message.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.result-title {
+    font-size: 2rem;
+    margin-bottom: var(--space-sm);
+}
+
+.passed-title {
+    color: var(--success);
+}
+
+.failed-title {
+    color: var(--warning);
+}
+
+.result-text {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    line-height: 1.7;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Certificate Section */
+.certificate-section {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl) var(--space-xl) var(--space-lg);
+    margin-bottom: var(--space-xl);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.cert-header {
+    text-align: center;
+    margin-bottom: var(--space-lg);
+}
+
+.cert-header h3 {
+    font-size: 1.4rem;
+    color: var(--secondary);
+    margin-bottom: 4px;
+}
+
+.cert-header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.certificate-wrapper {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: var(--space-lg);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border-light);
+}
+
+.certificate-canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.certificate-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+}
+
+.cert-id-display {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: right;
+    background: var(--bg-secondary);
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+}
+
+.cert-id-display span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+.cert-id-display strong {
+    color: var(--secondary);
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+}
+
+/* Actions */
+.result-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-2xl);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s ease;
+}
+
+.result-actions.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Review Section */
+.review-section {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-md);
+}
+
+.review-section h3 {
+    margin-bottom: var(--space-lg);
+    font-size: 1.2rem;
+}
+
+.review-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.review-item {
+    display: flex;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    border-left: 3px solid;
+}
+
+.review-item.correct {
+    background: rgba(46, 204, 113, 0.05);
+    border-color: var(--success);
+}
+
+.review-item.incorrect {
+    background: rgba(231, 76, 60, 0.05);
+    border-color: var(--danger);
+}
+
+.review-status {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    padding-top: 2px;
+}
+
+.review-question {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+}
+
+.review-explanation {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+    .score-circle {
+        width: 140px;
+        height: 140px;
+    }
+
+    .score-number {
+        font-size: 2.5rem;
+    }
+
+    .result-title {
+        font-size: 1.5rem;
+    }
+
+    .certificate-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cert-id-display {
+        text-align: center;
+    }
+}
